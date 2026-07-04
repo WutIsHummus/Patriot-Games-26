@@ -4,18 +4,9 @@ import { Button, Card, Badge } from '../components/ui.jsx'
 import { getUser, getProfile } from '../lib/session.js'
 
 const STEPS = [
-  {
-    title: 'Take a quick quiz',
-    body: 'Questions tuned to your location and the issues that matter in your community right now.',
-  },
-  {
-    title: 'See your political profile',
-    body: 'Where you land on the big axes — plus the individual issues you care about, preserved as-is.',
-  },
-  {
-    title: 'Compare your ballot',
-    body: 'Every race near you, with a few good matches per office compared side by side. You decide.',
-  },
+  { title: 'Quick quiz', body: 'Tuned to your town & the news' },
+  { title: 'Your profile', body: 'Your views, mapped honestly' },
+  { title: 'Compare & choose', body: 'Best matches, side by side' },
 ]
 
 export function Home() {
@@ -55,17 +46,19 @@ export function Home() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
-        <div className="grid gap-6 sm:grid-cols-3">
+        <Card className="flex flex-col divide-y divide-slate-100 sm:flex-row sm:divide-x sm:divide-y-0">
           {STEPS.map((step, i) => (
-            <Card key={step.title} className="p-6">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700">
+            <div key={step.title} className="flex flex-1 items-center gap-4 p-5 sm:p-6">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
                 {i + 1}
+              </span>
+              <div>
+                <h3 className="font-semibold text-slate-900">{step.title}</h3>
+                <p className="text-sm text-slate-500">{step.body}</p>
               </div>
-              <h3 className="mb-2 font-semibold text-slate-900">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-slate-600">{step.body}</p>
-            </Card>
+            </div>
           ))}
-        </div>
+        </Card>
 
         <Card className="mt-12 bg-slate-900 p-8 text-center sm:p-12">
           <h2 className="text-2xl font-bold text-white">Informed, not influenced.</h2>
