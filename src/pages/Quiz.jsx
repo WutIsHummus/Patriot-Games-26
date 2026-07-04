@@ -245,7 +245,9 @@ export function Quiz() {
               {question.question}
             </h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
+            {/* Keyed by question so buttons remount — reused DOM nodes keep the
+                previous question's focus/hover state and look pre-selected. */}
+            <div className="bb-rank-grid" key={question.id}>
               {Array.from(
                 { length: QUIZ_SCALE.max - QUIZ_SCALE.min + 1 },
                 (_, i) => QUIZ_SCALE.min + i,
@@ -254,20 +256,23 @@ export function Quiz() {
                 return (
                   <button
                     key={rank}
-                    onClick={() => selectRank(rank)}
+                    onClick={(e) => {
+                      e.currentTarget.blur()
+                      selectRank(rank)
+                    }}
                     title={RANK_LABELS[rank - 1]}
-                    className={`bb-quizopt ${selected ? 'bb-quizopt--selected' : ''}`}
-                    style={{ flexDirection: 'column', justifyContent: 'center', gap: 6, padding: '14px 4px' }}
+                    aria-label={`${rank} — ${RANK_LABELS[rank - 1]}`}
+                    className={`bb-rank ${selected ? 'bb-rank--selected' : ''}`}
                   >
-                    <span style={{ font: '600 var(--text-lg) / 1 var(--font-mono)', color: selected ? 'var(--primary)' : 'var(--text-heading)' }}>
-                      {rank}
-                    </span>
-                    <span className="bb-quizopt__ranklabel" style={{ font: '430 10px/1.25 var(--font-sans)', color: 'var(--text-muted)', textAlign: 'center' }}>
-                      {RANK_LABELS[rank - 1]}
-                    </span>
+                    <span className="bb-rank__num">{rank}</span>
+                    <span className="bb-rank__label">{RANK_LABELS[rank - 1]}</span>
                   </button>
                 )
               })}
+            </div>
+            <div className="bb-rank-ends" aria-hidden="true">
+              <span>{RANK_LABELS[0]}</span>
+              <span>{RANK_LABELS[RANK_LABELS.length - 1]}</span>
             </div>
           </>
         )}

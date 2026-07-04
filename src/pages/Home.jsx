@@ -48,7 +48,7 @@ export function Home() {
           </p>
           <div style={{ marginTop: 36, display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
             <Link to={user ? '/quiz' : '/login'}>
-              <Button size="lg">{profile ? 'Retake the quiz' : 'Get started'}</Button>
+              <Button size="lg">Get started</Button>
             </Link>
             {profile ? (
               <Link to="/ballot">

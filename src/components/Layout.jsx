@@ -64,26 +64,29 @@ export function Layout({ children }) {
         </div>
       </header>
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>{children}</main>
-      <footer
-        style={{
-          borderTop: '1px solid var(--border-default)',
-          background: 'var(--white)',
-          padding: 'var(--space-6) 0',
-        }}
-      >
-        <div className="bb-container" style={{ textAlign: 'center' }}>
-          <div
-            aria-hidden="true"
-            style={{ color: 'var(--blue-300)', fontSize: 10, letterSpacing: '0.6em', textIndent: '0.6em', marginBottom: 10 }}
-          >
-            ★ ★ ★
+      {/* Home anchors its own navy statement panel instead (design-kit app shell). */}
+      {location.pathname !== '/' && (
+        <footer
+          style={{
+            borderTop: '1px solid var(--border-default)',
+            background: 'var(--white)',
+            padding: 'var(--space-6) 0',
+          }}
+        >
+          <div className="bb-container" style={{ textAlign: 'center' }}>
+            <div
+              aria-hidden="true"
+              style={{ color: 'var(--blue-300)', fontSize: 10, letterSpacing: '0.6em', textIndent: '0.6em', marginBottom: 10 }}
+            >
+              ★ ★ ★
+            </div>
+            <p style={{ margin: 0, fontSize: 'var(--text-xs)', lineHeight: 1.6, color: 'var(--text-faint)' }}>
+              BallotBuddy is a nonpartisan voter guide. It compares candidates against your views —
+              the final choice is always yours.
+            </p>
           </div>
-          <p style={{ margin: 0, fontSize: 'var(--text-xs)', lineHeight: 1.6, color: 'var(--text-faint)' }}>
-            BallotBuddy is a nonpartisan voter guide. It compares candidates against your views —
-            the final choice is always yours.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   )
 }
