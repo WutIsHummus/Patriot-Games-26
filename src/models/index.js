@@ -4,3 +4,5 @@ export {
   createAgentSession,
   systemContext,
 } from './agent.js'
+
+export { runTest, testPrompt } from './runTest.js'
