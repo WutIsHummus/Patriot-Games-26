@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { fetchJson } from '../lib/httpClient.js'
 import { normalizeError, ProviderError } from '../lib/errors.js'
+import { parseLlmJson } from '../lib/llmJson.js'
 import { wrap, buildKey } from '../db/cache.js'
 import { KEYS, TTL, hasKey, OPENROUTER_MODEL } from '../config.js'
 
@@ -73,7 +74,7 @@ export async function recommendBallot({ location, profile, ballot } = {}) {
       }
       let data
       try {
-        data = JSON.parse(content)
+        data = parseLlmJson(content)
       } catch {
         throw new ProviderError(PROVIDER, 'Model returned non-JSON content', 502)
       }

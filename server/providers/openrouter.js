@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { fetchJson } from '../lib/httpClient.js'
 import { normalizeError, ProviderError } from '../lib/errors.js'
+import { parseLlmJson } from '../lib/llmJson.js'
 import { wrap, buildKey } from '../db/cache.js'
 import { KEYS, TTL, hasKey, OPENROUTER_MODEL } from '../config.js'
 
@@ -42,7 +43,7 @@ async function chatJson(systemPrompt, userPayload) {
     throw new ProviderError(PROVIDER, 'Empty completion from OpenRouter', 502)
   }
   try {
-    return JSON.parse(content)
+    return parseLlmJson(content)
   } catch {
     throw new ProviderError(PROVIDER, 'Model returned non-JSON content', 502)
   }
