@@ -1,1 +1,1 @@
-export { getRecommendedBallot } from './agent.js'
+export { getCuratedBallot } from './agent.js'

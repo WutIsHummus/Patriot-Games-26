@@ -41,8 +41,9 @@ export async function recommendBallot({ location, profile, ballot } = {}) {
     return { ok: false, source: PROVIDER, error: { message: 'ballot object is required', status: 400 } }
   }
 
+  // systemContext is part of the key so editing context.md invalidates old entries.
   const key = buildKey(PROVIDER, 'recommendBallot', {
-    hash: hashParams({ location, profile, ballot, model: OPENROUTER_MODEL }),
+    hash: hashParams({ location, profile, ballot, model: OPENROUTER_MODEL, systemContext }),
   })
   return wrap(key, PROVIDER, TTL.SCORING, async () => {
     try {

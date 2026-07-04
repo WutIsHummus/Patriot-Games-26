@@ -9,9 +9,10 @@
  * @param {object} input.location - { zip, state, county }
  * @param {object} input.profile - output of POST /api/scoring/quiz
  * @param {object} input.ballot - races + candidates (from /api/elections + /api/candidates or seed data)
- * @returns {Promise<Array>} races: per-race topPick, notableAlternative, and all options scored
+ * @returns {Promise<Array>} races: per-race shortlist (shortlisted flags), at-a-glance
+ *   comparison of shortlisted candidates, and all options scored
  */
-export async function getRecommendedBallot({ location, profile, ballot }) {
+export async function getCuratedBallot({ location, profile, ballot }) {
   const response = await fetch('/api/agent/ballot', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
