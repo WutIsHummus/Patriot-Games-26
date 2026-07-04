@@ -227,6 +227,23 @@ export function Ballot() {
           </p>
         </div>
 
+        <div className="mb-8 flex items-start gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-white p-5">
+          <span
+            aria-hidden
+            className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm text-white"
+          >
+            ⚖
+          </span>
+          <div>
+            <p className="font-semibold text-slate-900">Informed, not influenced</p>
+            <p className="mt-0.5 text-sm leading-relaxed text-slate-600">
+              When several candidates fit your views, we show all of them — where they agree with
+              you, where they don't, and how solid the data is. You'll only see one name when a
+              race genuinely has one good option.
+            </p>
+          </div>
+        </div>
+
         {!races ? (
           <div className="flex flex-col items-center gap-4 py-24">
             <Spinner className="h-8 w-8" />

@@ -60,14 +60,6 @@ export function Home() {
           ))}
         </Card>
 
-        <Card className="mt-12 bg-slate-900 p-8 text-center sm:p-12">
-          <h2 className="text-2xl font-bold text-white">Informed, not influenced.</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-300">
-            When several candidates fit your views, we show you all of them — where they agree with
-            you, where they don't, and how solid the data is. One-candidate answers only happen
-            when a race genuinely has one good option.
-          </p>
-        </Card>
       </section>
     </Layout>
   )
