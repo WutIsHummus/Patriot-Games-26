@@ -16,7 +16,7 @@ A single JSON payload:
   }
   ```
   `economic`: -1 left/interventionist ↔ 1 right/free-market. `social`: -1 progressive ↔ 1 traditional. `issuePreferences` are the voter's individual stances with importance weights — honor these even when they cut against the overall axes.
-- **ballot**: the races and candidates for the voter's location in the **November 3, 2026 general election**, fetched by the app (from its civic-data API or curated seed data), including whatever stance/record information is available per candidate.
+- **ballot**: the races and candidates for the voter's location in the **November 3, 2026 general election**, fetched by the app (from its civic-data API or curated seed data), including whatever stance/record information is available per candidate. Federal incumbents may include a `legislativeRecord` array of real bills they sponsored or cosponsored (`title`, `latestAction`, `role`) — this is ground-truth voting/legislative activity, not a summary, and should weigh most heavily per the matching rules below.
 
 # Grounding rules
 

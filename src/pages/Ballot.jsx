@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { Layout } from '../components/Layout.jsx'
 import { Button, Card, Badge, PartyBadge, ScoreRing, Spinner } from '../components/ui.jsx'
-import { getProfile, getLocation } from '../lib/session.js'
+import { getProfile, getLocation, getUser } from '../lib/session.js'
 import { SEED_BALLOT, SEED_LOCATION } from '../data/seedBallot.js'
 import { matchBallotLocally } from '../lib/localEngine.js'
 
@@ -22,11 +22,20 @@ function CandidateCompareCard({ option, highlight }) {
       }`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold text-slate-900">{option.name}</p>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <PartyBadge party={option.party} />
-            {option.incumbent && <Badge>Incumbent</Badge>}
+        <div className="flex items-start gap-3">
+          {option.photoUrl && (
+            <img
+              src={option.photoUrl}
+              alt=""
+              className="h-11 w-11 flex-shrink-0 rounded-full object-cover"
+            />
+          )}
+          <div>
+            <p className="font-semibold text-slate-900">{option.name}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <PartyBadge party={option.party} />
+              {option.incumbent && <Badge>Incumbent</Badge>}
+            </div>
           </div>
         </div>
         <ScoreRing score={option.score} size={56} />
@@ -61,6 +70,9 @@ function DeepDive({ option }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="mb-2 flex flex-wrap items-center gap-2">
+        {option.photoUrl && (
+          <img src={option.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+        )}
         <p className="font-semibold text-slate-900">{option.name}</p>
         <PartyBadge party={option.party} />
         {option.incumbent && <Badge>Incumbent</Badge>}
@@ -184,7 +196,7 @@ export function Ballot() {
         const res = await fetch('/api/agent/ballot', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ location, profile }),
+          body: JSON.stringify({ location, profile, notifyPhone: getUser()?.phoneNumber }),
         })
         const data = await res.json()
         if (!cancelled && data.ok && data.races?.length) {

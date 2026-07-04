@@ -81,25 +81,61 @@ Search the web for their actual, current public positions and record. Produce a 
 }
 - bio: 1-2 neutral sentences describing who they are.
 - stances: 3-6 of their real, specific public positions on issues relevant to the office (not generic party talking points). Base this only on what you find; if you cannot verify a stance, omit it rather than guessing.
-- record: 1-2 sentences on relevant voting record or professional record, if any is found.
+- record: 1-2 sentences on relevant voting record or professional record, if any is found. If the input includes a "legislativeRecord" array of real bills they sponsored/cosponsored, treat those as ground truth and prioritize them over anything found via web search when writing this field.
 - sources: URLs you used.
 - If you cannot find reliable information distinguishing this real person, return { "bio": "", "stances": [], "record": "", "sources": [] }.
 Never invent positions. Return only the JSON object.`
 
-export async function researchCandidateStances({ name, party, office, state } = {}) {
+const RACE_DISCOVERY_PROMPT = `You are a nonpartisan research assistant for a voter guide app.
+You will be given an office, a state, an optional district, and an election date.
+Search the web to find who is actually running (declared/filed candidates) for that office in that election. Produce a JSON object with exactly this shape:
+{
+  "candidates": [ { "name": string, "party": string, "incumbent": boolean } ],
+  "sources": [ string ]
+}
+- Include only real people you can verify are declared or filed candidates for this specific race. Never guess or fill in plausible names.
+- party: "Democratic", "Republican", "Independent", "Libertarian", "Green", or the actual party name.
+- sources: URLs you used.
+- If you cannot verify at least two real candidates for this race, return { "candidates": [], "sources": [] }.
+Return only the JSON object.`
+
+export async function researchRaceCandidates({ office, state, district, county, electionDay } = {}) {
+  if (!hasKey(PROVIDER)) return notConfigured()
+  if (!office || !state) {
+    return { ok: false, source: PROVIDER, error: { message: 'office and state are required', status: 400 } }
+  }
+
+  const key = buildKey(PROVIDER, 'researchRaceCandidates', {
+    hash: hashParams({ office, state, district, county, electionDay, model: OPENROUTER_MODEL }),
+  })
+  return wrap(key, PROVIDER, TTL.CANDIDATE_RESEARCH, async () => {
+    try {
+      const data = await chatJson(
+        RACE_DISCOVERY_PROMPT,
+        { office, state, district, county, electionDay },
+        { webSearch: true, timeoutMs: RESEARCH_TIMEOUT_MS },
+      )
+      return { ok: true, source: PROVIDER, data }
+    } catch (err) {
+      return normalizeError(PROVIDER, err)
+    }
+  })
+}
+
+export async function researchCandidateStances({ name, party, office, state, legislativeRecord } = {}) {
   if (!hasKey(PROVIDER)) return notConfigured()
   if (!name || !office) {
     return { ok: false, source: PROVIDER, error: { message: 'name and office are required', status: 400 } }
   }
 
   const key = buildKey(PROVIDER, 'researchCandidateStances', {
-    hash: hashParams({ name, party, office, state, model: OPENROUTER_MODEL }),
+    hash: hashParams({ name, party, office, state, legislativeRecord, model: OPENROUTER_MODEL }),
   })
   return wrap(key, PROVIDER, TTL.CANDIDATE_RESEARCH, async () => {
     try {
       const data = await chatJson(
         CANDIDATE_RESEARCH_PROMPT,
-        { name, party, office, state },
+        { name, party, office, state, legislativeRecord },
         { webSearch: true, timeoutMs: RESEARCH_TIMEOUT_MS },
       )
       return { ok: true, source: PROVIDER, data }

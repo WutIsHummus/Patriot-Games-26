@@ -17,7 +17,7 @@ export function Quiz() {
   const navigate = useNavigate()
 
   const question = QUIZ_QUESTIONS[step]
-  const isOpenQuestion = question.type === 'open'
+  const isOpenQuestion = question?.type === 'open'
   const progress = ((step + 1) / QUIZ_QUESTIONS.length) * 100
 
   useEffect(() => {

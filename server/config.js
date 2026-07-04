@@ -9,6 +9,7 @@ export const KEYS = {
   openstates: process.env.OPENSTATES_API_KEY || '',
   ballotpedia: process.env.BALLOTPEDIA_API_KEY || '',
   openrouter: process.env.OPENROUTER_API_KEY || '',
+  congress: process.env.CONGRESS_API_KEY || '',
 }
 
 export const TWILIO = {
