@@ -13,6 +13,12 @@ dist-ssr
 *.local
 .env
 
+# Backend SQLite cache (runtime data, not source)
+server/data/*.sqlite
+server/data/*.sqlite-journal
+server/data/*.sqlite-wal
+server/data/*.sqlite-shm
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
