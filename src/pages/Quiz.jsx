@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout.jsx'
 import { Button, Card, Badge, Progress, Spinner } from '../components/ui.jsx'
-import { QUIZ_QUESTIONS } from '../data/quizQuestions.js'
+import { QUIZ_QUESTIONS, QUIZ_SCALE, RANK_LABELS } from '../data/quizQuestions.js'
 import { SEED_LOCATION } from '../data/seedBallot.js'
 import { scoreQuizLocally } from '../lib/localEngine.js'
 import { saveProfile, saveLocation } from '../lib/session.js'
@@ -17,15 +17,15 @@ export function Quiz() {
   const question = QUIZ_QUESTIONS[step]
   const progress = ((step + 1) / QUIZ_QUESTIONS.length) * 100
 
-  function selectAnswer(value, label) {
+  function selectRank(rank) {
     const next = {
       ...answers,
       [question.id]: {
         questionId: question.id,
         topic: question.topic,
         question: question.question,
-        answer: value,
-        answerLabel: label,
+        answer: rank,
+        answerLabel: RANK_LABELS[rank - 1],
       },
     }
     setAnswers(next)
@@ -82,8 +82,8 @@ export function Quiz() {
             </Badge>
             <h1 className="text-2xl font-bold text-slate-900">First, where do you vote?</h1>
             <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              Your ZIP code tailors the quiz to local issues — housing, the grid, property taxes —
-              and finds the elections on your ballot. You can retake the quiz anytime.
+              You will rate ten policy statements from 1 (strongly disagree) to 7 (strongly agree).
+              Your ZIP helps locate the elections on your ballot. You can retake the quiz anytime.
             </p>
             <form
               className="mt-6 flex gap-3"
@@ -124,35 +124,50 @@ export function Quiz() {
             <span>
               Question {step + 1} of {QUIZ_QUESTIONS.length}
             </span>
-            <Badge tone={question.topic.startsWith('Local') ? 'green' : 'slate'}>
-              {question.topic}
-            </Badge>
+            <Badge tone="slate">{question.topic}</Badge>
           </div>
           <Progress value={progress} />
         </div>
+
+        <p className="mb-3 text-sm font-medium text-slate-500">
+          Rate how much you agree (1 = strongly disagree, 7 = strongly agree)
+        </p>
 
         <h1 className="mb-8 text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
           {question.question}
         </h1>
 
-        <div className="space-y-3">
-          {question.options.map((opt) => {
-            const selected = answers[question.id]?.answer === opt.value
+        <div className="grid grid-cols-7 gap-2 sm:gap-3">
+          {Array.from(
+            { length: QUIZ_SCALE.max - QUIZ_SCALE.min + 1 },
+            (_, i) => QUIZ_SCALE.min + i,
+          ).map((rank) => {
+            const selected = answers[question.id]?.answer === rank
             return (
               <button
-                key={opt.value}
-                onClick={() => selectAnswer(opt.value, opt.label)}
-                className={`w-full rounded-xl border p-4 text-left transition-all hover:border-indigo-400 hover:shadow-sm ${
+                key={rank}
+                onClick={() => selectRank(rank)}
+                title={RANK_LABELS[rank - 1]}
+                className={`flex flex-col items-center rounded-xl border px-1 py-3 transition-all hover:border-indigo-400 hover:shadow-sm sm:py-4 ${
                   selected
                     ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100'
                     : 'border-slate-200 bg-white'
                 }`}
               >
-                <span className="text-slate-800">{opt.label}</span>
+                <span className="text-lg font-bold text-slate-900">{rank}</span>
+                <span className="mt-1 hidden text-center text-[10px] leading-tight text-slate-500 sm:block">
+                  {RANK_LABELS[rank - 1]}
+                </span>
               </button>
             )
           })}
         </div>
+
+        <p className="mt-3 text-center text-xs text-slate-400 sm:hidden">
+          {answers[question.id]
+            ? RANK_LABELS[answers[question.id].answer - 1]
+            : 'Tap a number to continue'}
+        </p>
 
         {step > 0 && (
           <button

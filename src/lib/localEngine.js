@@ -2,66 +2,30 @@
 // end-to-end without API keys. When the server LLM endpoints respond, they
 // take precedence (same output shapes as /api/scoring/quiz and /api/agent/ballot).
 
-const ANSWER_WEIGHTS = {
-  // questionId: { answerValue: { economic, social, localFocus } } — each in -1..1
-  'economy-role': {
-    'strong-intervention': { economic: -0.9 },
-    'some-intervention': { economic: -0.2 },
-    minimal: { economic: 0.9 },
-  },
-  'housing-costs': {
-    'build-public': { economic: -0.7, localFocus: 0.6 },
-    'zoning-reform': { economic: 0.2, localFocus: 0.6 },
-    market: { economic: 0.8, localFocus: 0.3 },
-    'renter-protection': { economic: -0.8, localFocus: 0.6 },
-  },
-  immigration: {
-    pathways: { social: -0.8 },
-    balanced: { social: 0.1 },
-    enforcement: { social: 0.8 },
-  },
-  'energy-grid': {
-    renewables: { economic: -0.4, social: -0.5, localFocus: 0.5 },
-    'all-of-above': { economic: 0.1, localFocus: 0.5 },
-    'fossil-reliability': { economic: 0.5, social: 0.5, localFocus: 0.5 },
-    'market-grid': { economic: 0.9, localFocus: 0.4 },
-  },
-  abortion: {
-    protect: { social: -0.9 },
-    limits: { social: 0.1 },
-    restrict: { social: 0.9 },
-  },
-  'public-safety': {
-    'community-programs': { social: -0.7, localFocus: 0.6 },
-    both: { social: 0, localFocus: 0.6 },
-    'more-police': { social: 0.8, localFocus: 0.5 },
-  },
-  education: {
-    'public-schools': { economic: -0.6, social: -0.3 },
-    mix: { economic: 0, social: 0 },
-    'school-choice': { economic: 0.7, social: 0.5 },
-    'local-control': { economic: 0.3, social: 0.3, localFocus: 0.5 },
-  },
-  climate: {
-    urgent: { economic: -0.5, social: -0.7 },
-    steady: { economic: 0, social: 0 },
-    overblown: { economic: 0.6, social: 0.7 },
-  },
-  'property-tax': {
-    'keep-services': { economic: -0.6, localFocus: 0.7 },
-    'targeted-relief': { economic: -0.2, localFocus: 0.7 },
-    cut: { economic: 0.8, localFocus: 0.6 },
-  },
+// Rank 1–7 maps to agreement: 1 = strongly disagree, 7 = strongly agree.
+function rankToAgreement(rank) {
+  return (Number(rank) - 4) / 3
 }
 
-const PRIORITY_ISSUES = {
-  economy: { issue: 'Economy', stance: 'Cost of living and jobs come first', weight: 0.9 },
-  housing: { issue: 'Housing', stance: 'Housing affordability is the top priority', weight: 0.9 },
-  rights: { issue: 'Civil rights', stance: 'Personal freedoms and civil rights come first', weight: 0.9 },
-  safety: { issue: 'Public safety', stance: 'Safety and border security come first', weight: 0.9 },
+function rankToWeight(rank) {
+  return (Math.abs(Number(rank) - 4) + 3) / 6
 }
 
-// answers: [{ questionId, topic, question, answer, answerLabel }]
+// Direction of agreement on each statement → political axes (-1..1 per axis).
+const QUESTION_AXES = {
+  'economy-affordability': { economic: -1 },
+  immigration: { social: 1 },
+  'iran-war': { social: 1 },
+  tariffs: { economic: 1 },
+  medicaid: { economic: -1 },
+  'election-integrity': { social: 1 },
+  redistricting: { social: -1 },
+  'ai-politics': { social: -1 },
+  crime: { social: 1 },
+  'housing-affordability': { economic: -1, localFocus: 1 },
+}
+
+// answers: [{ questionId, topic, question, answer (1-7), answerLabel }]
 export function scoreQuizLocally(answers) {
   let economic = 0
   let social = 0
@@ -72,44 +36,67 @@ export function scoreQuizLocally(answers) {
   const issuePreferences = []
 
   for (const a of answers) {
-    const w = ANSWER_WEIGHTS[a.questionId]?.[a.answer]
-    if (w) {
-      if (w.economic !== undefined) {
-        economic += w.economic
+    const rank = Number(a.answer)
+    if (!Number.isFinite(rank) || rank < 1 || rank > 7) continue
+
+    const agreement = rankToAgreement(rank)
+    const axes = QUESTION_AXES[a.questionId]
+    if (axes) {
+      if (axes.economic !== undefined) {
+        economic += agreement * axes.economic
         econN++
       }
-      if (w.social !== undefined) {
-        social += w.social
+      if (axes.social !== undefined) {
+        social += agreement * axes.social
         socialN++
       }
-      if (w.localFocus !== undefined) {
-        localFocus += w.localFocus
+      if (axes.localFocus !== undefined) {
+        localFocus += ((agreement + 1) / 2) * axes.localFocus
         localN++
       }
-      issuePreferences.push({
-        issue: a.topic.replace(/^Local: /, ''),
-        stance: a.answerLabel,
-        weight: a.topic.startsWith('Local') ? 0.7 : 0.6,
-      })
     }
-    if (a.questionId === 'priority' && PRIORITY_ISSUES[a.answer]) {
-      issuePreferences.unshift(PRIORITY_ISSUES[a.answer])
-    }
+
+    issuePreferences.push({
+      issue: a.topic,
+      stance: `${a.answerLabel} (${rank}/7)`,
+      weight: rankToWeight(rank),
+    })
   }
 
-  const axes = {
+  issuePreferences.sort((a, b) => b.weight - a.weight)
+
+  const profileAxes = {
     economic: econN ? economic / econN : 0,
     social: socialN ? social / socialN : 0,
     localFocus: localN ? localFocus / localN : 0.4,
   }
 
-  const econDesc = axes.economic < -0.25 ? 'left-leaning on economics' : axes.economic > 0.25 ? 'market-oriented on economics' : 'economically moderate'
-  const socialDesc = axes.social < -0.25 ? 'socially progressive' : axes.social > 0.25 ? 'socially traditional' : 'socially moderate'
+  const econDesc =
+    profileAxes.economic < -0.25
+      ? 'left-leaning on economics'
+      : profileAxes.economic > 0.25
+        ? 'market-oriented on economics'
+        : 'economically moderate'
+  const socialDesc =
+    profileAxes.social < -0.25
+      ? 'socially progressive'
+      : profileAxes.social > 0.25
+        ? 'socially traditional'
+        : 'socially moderate'
   const summary = `You come across as ${econDesc} and ${socialDesc}. ${
-    axes.localFocus > 0.5 ? 'Local issues weigh heavily in your choices.' : 'You weigh national and local issues about evenly.'
-  } Your top priority: ${issuePreferences[0]?.issue?.toLowerCase() || 'not specified'}.`
+    profileAxes.localFocus > 0.5
+      ? 'Local issues weigh heavily in your choices.'
+      : 'You weigh national and local issues about evenly.'
+  } Your strongest ratings: ${issuePreferences
+    .slice(0, 3)
+    .map((p) => p.issue.toLowerCase())
+    .join(', ')}.`
 
-  return { axes, issuePreferences: issuePreferences.slice(0, 6), summary }
+  return {
+    axes: profileAxes,
+    issuePreferences: issuePreferences.slice(0, 10),
+    summary,
+  }
 }
 
 // Candidate stance keywords → axis positions used for cosine-ish matching.
