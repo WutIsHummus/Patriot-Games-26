@@ -102,7 +102,7 @@ export function Quiz() {
     if (!profile) profile = scoreQuizLocally(answerList)
 
     saveProfile({ ...profile, scoredAt: new Date().toISOString() })
-    navigate('/results')
+    navigate('/ballot')
   }
 
   if (scoring) {
@@ -110,7 +110,7 @@ export function Quiz() {
       <Layout>
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4">
           <Spinner className="h-8 w-8" />
-          <p className="text-slate-600">Building your political profile…</p>
+          <p className="text-slate-600">Matching candidates to your answers…</p>
         </div>
       </Layout>
     )

@@ -3,7 +3,6 @@ import { getUser, clearUser } from '../lib/session.js'
 
 const NAV_LINKS = [
   { to: '/quiz', label: 'Quiz' },
-  { to: '/results', label: 'My Profile' },
   { to: '/ballot', label: 'My Ballot' },
 ]
 
