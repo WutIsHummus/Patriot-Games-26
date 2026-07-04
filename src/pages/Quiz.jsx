@@ -6,6 +6,7 @@ import { QUIZ_QUESTIONS, QUIZ_SCALE, RANK_LABELS } from '../data/quizQuestions.j
 import { SEED_LOCATION } from '../data/seedBallot.js'
 import { scoreQuizLocally } from '../lib/localEngine.js'
 import { saveProfile, saveLocation } from '../lib/session.js'
+import { zipToState } from '../lib/zipToState.js'
 
 export function Quiz() {
   const [step, setStep] = useState(-1) // -1 = location intro
@@ -78,7 +79,11 @@ export function Quiz() {
   async function finish(answerMap) {
     setScoring(true)
     const answerList = Object.values(answerMap)
-    saveLocation({ ...SEED_LOCATION, zip: zip || SEED_LOCATION.zip })
+    const resolvedZip = zip || SEED_LOCATION.zip
+    const resolvedState = zipToState(resolvedZip) || SEED_LOCATION.state
+    // County isn't derivable from ZIP alone; only real for the seed location.
+    const county = resolvedState === SEED_LOCATION.state ? SEED_LOCATION.county : null
+    saveLocation({ zip: resolvedZip, state: resolvedState, county })
 
     // Prefer the server LLM scorer; fall back to the local engine when the
     // API key isn't configured or the request fails.

@@ -20,6 +20,35 @@ function hashParams(params) {
   return createHash('sha256').update(JSON.stringify(params)).digest('hex').slice(0, 32)
 }
 
+// The model must only ever describe candidates that were actually in the
+// input ballot. Reject the response outright if it invents a race/candidate
+// that doesn't exist, rather than let a hallucination reach the UI.
+function validateAgainstBallot(data, ballot) {
+  if (!data || !Array.isArray(data.races)) {
+    throw new ProviderError(PROVIDER, 'Model response missing races array', 502)
+  }
+  const racesByOffice = new Map(
+    (ballot.races || []).map((r) => [`${r.office}::${r.district || ''}`, r]),
+  )
+  for (const race of data.races) {
+    const key = `${race.office}::${race.district || ''}`
+    const sourceRace = racesByOffice.get(key)
+    if (!sourceRace) {
+      throw new ProviderError(PROVIDER, `Model invented a race not on the ballot: ${race.office}`, 502)
+    }
+    const validIds = new Set(sourceRace.candidates.map((c) => c.candidateId))
+    for (const option of race.options || []) {
+      if (!validIds.has(option.candidateId)) {
+        throw new ProviderError(
+          PROVIDER,
+          `Model invented a candidate not on the ballot: ${option.candidateId} (${race.office})`,
+          502,
+        )
+      }
+    }
+  }
+}
+
 /**
  * Produce the curated ballot: every race scored against the voter's profile,
  * per the contract in context.md. One-shot structured call, cached.
@@ -59,6 +88,7 @@ export async function recommendBallot({ location, profile, ballot } = {}) {
           },
           body: JSON.stringify({
             model: OPENROUTER_MODEL,
+            temperature: 0,
             response_format: { type: 'json_object' },
             messages: [
               { role: 'system', content: systemContext },
@@ -79,6 +109,7 @@ export async function recommendBallot({ location, profile, ballot } = {}) {
       } catch {
         throw new ProviderError(PROVIDER, 'Model returned non-JSON content', 502)
       }
+      validateAgainstBallot(data, ballot)
       return { ok: true, source: PROVIDER, data }
     } catch (err) {
       return normalizeError(PROVIDER, err)

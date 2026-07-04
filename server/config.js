@@ -11,6 +11,17 @@ export const KEYS = {
   openrouter: process.env.OPENROUTER_API_KEY || '',
 }
 
+export const TWILIO = {
+  accountSid: process.env.TWILIO_ACCOUNT_SID || '',
+  authToken: process.env.TWILIO_AUTH_TOKEN || '',
+  verifyServiceSid: process.env.TWILIO_VERIFY_SERVICE_SID || '',
+  fromNumber: process.env.TWILIO_FROM_NUMBER || '',
+}
+
+export function hasTwilio() {
+  return Boolean(TWILIO.accountSid && TWILIO.authToken && TWILIO.verifyServiceSid)
+}
+
 export const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5'
 
 export function hasKey(provider) {
@@ -25,6 +36,7 @@ export const TTL = {
   BIO: 7 * 24 * 3600,
   LEGISLATORS: 24 * 3600,
   SCORING: 24 * 3600,
+  CANDIDATE_RESEARCH: 7 * 24 * 3600,
 }
 
 // Vercel's filesystem is read-only except /tmp, and /tmp is not persisted

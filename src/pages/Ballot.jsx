@@ -110,6 +110,11 @@ function DeepDive({ option }) {
   )
 }
 
+function LiveDataBadge({ live }) {
+  if (live == null) return null
+  return live ? <Badge tone="green">Live candidates</Badge> : <Badge tone="slate">Sample data</Badge>
+}
+
 function RaceSection({ race }) {
   const [expanded, setExpanded] = useState(false)
   const goodIds = new Set(race.goodOptionIds || [])
@@ -123,6 +128,7 @@ function RaceSection({ race }) {
         <h2 className="text-xl font-bold text-slate-900">{race.office}</h2>
         <Badge tone="slate">{LEVEL_LABELS[race.level] || race.level}</Badge>
         {race.district && <span className="text-sm text-slate-500">{race.district}</span>}
+        <LiveDataBadge live={race.live} />
       </div>
       <p className="mb-5 text-sm text-slate-500">
         {single
@@ -178,11 +184,11 @@ export function Ballot() {
         const res = await fetch('/api/agent/ballot', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ location, profile, ballot: SEED_BALLOT }),
+          body: JSON.stringify({ location, profile }),
         })
         const data = await res.json()
         if (!cancelled && data.ok && data.races?.length) {
-          setRaces(normalizeAgentRaces(data.races))
+          setRaces(normalizeAgentRaces(data.races, data.raceSources))
           return
         }
       } catch {
@@ -215,7 +221,8 @@ export function Ballot() {
             one — and show where they agree and differ with you. The pick is yours.
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            {location.county} County, {location.state} {location.zip}
+            {location.county ? `${location.county} County, ` : ''}
+            {location.state} {location.zip}
             {usedFallback && ' · quick-match mode (AI matcher unavailable)'}
           </p>
         </div>
@@ -246,7 +253,7 @@ export function Ballot() {
 // The server agent returns topPick/notableAlternative/options; the UI never
 // surfaces a single pick, so fold everything into options + goodOptionIds
 // (top pick, notable alternative, and anyone within 12 points of the leader).
-function normalizeAgentRaces(agentRaces) {
+function normalizeAgentRaces(agentRaces, raceSources) {
   return agentRaces.map((race) => {
     const options = [...(race.options || [])].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     const leader = options[0]?.score ?? 0
@@ -258,10 +265,12 @@ function normalizeAgentRaces(agentRaces) {
     if (goodIds.size < 2 && options.length > 1) {
       options.slice(0, 2).forEach((o) => goodIds.add(o.candidateId))
     }
+    const sourceKey = `${race.office}::${race.district || ''}`
     return {
       office: race.office,
       level: race.level,
       district: race.district,
+      live: raceSources ? raceSources[sourceKey] === 'live' : null,
       goodOptionIds: [...goodIds],
       options,
     }
