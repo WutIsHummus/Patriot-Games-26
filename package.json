@@ -10,7 +10,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:agent": "node scripts/testAgent.js"
+    "test:agent": "node src/models/testAgent.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
