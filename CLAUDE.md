@@ -20,12 +20,15 @@ We are building an AI platform that helps voters find politicians who align with
 4. **Scoring** — score the user on a political scale, but also preserve their individual issue preferences from the quiz (alignment is not just one axis).
 5. **Per-election short quizzes** — an election may hinge on current/local problems where the user's general political alignment is too vague to match well. In that case, offer an optional short quiz for that election. Only prompt when it genuinely matters, and only if the user opts in.
 6. **Curated candidate list** — after quizzing, the voter gets a curated list of candidates, organized per office/title, with more information about each candidate. The goal is to inform, not decide: voters pick for themselves at the end.
+   - **Never recommend a single candidate.** The AI narrows the field to a few good options per office — not one. A single candidate is shown only when there genuinely aren't multiple good matches (e.g., an uncontested race).
+   - When there are multiple good options, present an **at-a-glance comparison** (key stances, alignment highlights, where they differ), with an optional **deeper comparison** the voter can drill into if needed.
+   - The output is always a comparison that supports an educated decision — never a "vote for this person" answer.
 
 ### Key product principles
 
 - Quizzes are retakeable at any time.
 - Low friction everywhere (SMS auth, opt-in extras, short quizzes).
-- The AI curates and informs; the final choice always belongs to the voter.
+- The AI curates and informs; the final choice always belongs to the voter. It never pushes one specific candidate — it narrows to a few good options and compares them (at a glance, deeper on demand), unless only one good option truly exists.
 - Location-awareness drives both quiz content (local issues) and election discovery.
 
 ### Data-source status & demo strategy
