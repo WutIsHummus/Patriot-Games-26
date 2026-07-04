@@ -17,6 +17,12 @@ db.exec(`
     expires_at INTEGER NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache(expires_at);
+
+  CREATE TABLE IF NOT EXISTS users (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    phone_number TEXT NOT NULL UNIQUE,
+    created_at   INTEGER NOT NULL
+  );
 `)
 
 export default db
