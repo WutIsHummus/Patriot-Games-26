@@ -23,9 +23,21 @@ const QUESTION_AXES = {
   'ai-politics': { social: -1 },
   crime: { social: 1 },
   'housing-affordability': { economic: -1, localFocus: 1 },
+  'ai-data-centers': { economic: 1, localFocus: 1 },
 }
 
-// answers: [{ questionId, topic, question, answer (1-7), answerLabel }]
+function parseOpenAnswer(answer) {
+  if (Array.isArray(answer)) return answer.filter(Boolean)
+  if (typeof answer === 'string') {
+    return answer
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+  }
+  return []
+}
+
+// answers: [{ questionId, topic, question, answer, answerLabel, type? }]
 export function scoreQuizLocally(answers) {
   let economic = 0
   let social = 0
@@ -36,6 +48,17 @@ export function scoreQuizLocally(answers) {
   const issuePreferences = []
 
   for (const a of answers) {
+    if (a.type === 'open' || a.questionId === 'open-priorities') {
+      for (const item of parseOpenAnswer(a.answer)) {
+        issuePreferences.push({
+          issue: item,
+          stance: 'Self-reported priority',
+          weight: 0.9,
+        })
+      }
+      continue
+    }
+
     const rank = Number(a.answer)
     if (!Number.isFinite(rank) || rank < 1 || rank > 7) continue
 
@@ -94,7 +117,7 @@ export function scoreQuizLocally(answers) {
 
   return {
     axes: profileAxes,
-    issuePreferences: issuePreferences.slice(0, 10),
+    issuePreferences: issuePreferences.slice(0, 15),
     summary,
   }
 }
