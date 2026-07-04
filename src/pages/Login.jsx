@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout.jsx'
-import { Button, Card, Spinner } from '../components/ui.jsx'
+import { Button, Card, Input } from '../components/ui.jsx'
 
 export function Login() {
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -60,78 +60,90 @@ export function Login() {
 
   return (
     <Layout>
-      <div className="flex min-h-[70vh] items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md p-8">
-          <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white">
+      <div
+        style={{
+          minHeight: '70vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '64px 24px',
+        }}
+      >
+        <Card stripe style={{ width: '100%', maxWidth: 420, padding: 32 }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div
+              style={{
+                position: 'relative',
+                overflow: 'hidden',
+                margin: '8px auto 16px',
+                width: 44,
+                height: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--blue-800)',
+                color: '#fff',
+                font: '700 16px/1 var(--font-sans)',
+              }}
+            >
               BB
+              <span style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, background: 'var(--stripe-duo)' }} />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Welcome to BallotBuddy</h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <h1 style={{ font: 'var(--weight-display) var(--text-xl) / 1.3 var(--font-display)' }}>
+              Welcome to BallotBuddy
+            </h1>
+            <p style={{ margin: '8px 0 0', font: '430 var(--text-sm) / 1.55 var(--font-sans)', color: 'var(--text-muted)' }}>
               {step === 'phone'
                 ? 'Sign in with your phone number to get started.'
                 : `Enter the code we sent to ${phoneNumber}.`}
             </p>
           </div>
           {step === 'phone' ? (
-            <form onSubmit={handleSendCode} className="space-y-4">
-              <div>
-                <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Phone number
-                </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="(555) 123-4567"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                  required
-                />
-              </div>
-              {error && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
-              )}
-              <Button type="submit" disabled={loading} className="w-full" size="lg">
-                {loading ? <Spinner className="h-4 w-4" /> : null}
+            <form onSubmit={handleSendCode} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Input
+                label="Phone number"
+                type="tel"
+                inputMode="numeric"
+                placeholder="(555) 123-4567"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                error={error}
+                required
+              />
+              <Button type="submit" size="lg" disabled={loading} style={{ width: '100%' }}>
                 {loading ? 'Sending…' : 'Send code'}
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleVerifyCode} className="space-y-4">
-              <div>
-                <label htmlFor="code" className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Verification code
-                </label>
-                <input
-                  id="code"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="123456"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                  required
-                />
-              </div>
-              {error && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
-              )}
-              <Button type="submit" disabled={loading} className="w-full" size="lg">
-                {loading ? <Spinner className="h-4 w-4" /> : null}
+            <form onSubmit={handleVerifyCode} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Input
+                label="Verification code"
+                type="text"
+                inputMode="numeric"
+                placeholder="123456"
+                mono
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                error={error}
+                required
+              />
+              <Button type="submit" size="lg" disabled={loading} style={{ width: '100%' }}>
                 {loading ? 'Verifying…' : 'Verify & sign in'}
               </Button>
-              <button
-                type="button"
-                onClick={() => setStep('phone')}
-                className="w-full text-center text-sm text-slate-500"
-              >
+              <Button variant="ghost" size="sm" type="button" onClick={() => setStep('phone')}>
                 Use a different number
-              </button>
+              </Button>
             </form>
           )}
-          <p className="mt-6 text-center text-xs text-slate-400">
+          <p
+            style={{
+              margin: '24px 0 0',
+              textAlign: 'center',
+              font: '430 var(--text-xs) / 1.5 var(--font-sans)',
+              color: 'var(--text-faint)',
+            }}
+          >
             Your number is only used to save your quiz results. No spam, ever.
           </p>
         </Card>

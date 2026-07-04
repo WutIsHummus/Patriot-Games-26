@@ -1,8 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Fragment } from 'react'
 import { getUser, clearUser } from '../lib/session.js'
 
-const NAV_LINKS = [
+// Header + footer from the BallotBuddy design system. The stepper is progress
+// feedback for the quiz→profile→ballot flow, never navigation; it only shows
+// while the voter is inside the flow.
+const FLOW_STEPS = [
   { to: '/quiz', label: 'Quiz' },
+  { to: '/results', label: 'My Profile' },
   { to: '/ballot', label: 'My Ballot' },
 ]
 
@@ -10,6 +15,7 @@ export function Layout({ children }) {
   const user = getUser()
   const location = useLocation()
   const navigate = useNavigate()
+  const activeIndex = FLOW_STEPS.findIndex((s) => s.to === location.pathname)
 
   function handleSignOut() {
     clearUser()
@@ -17,57 +23,65 @@ export function Layout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-              BB
-            </span>
-            BallotBuddy
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header className="bb-header">
+        <div className="bb-header__stripe" aria-hidden="true" />
+        <div className="bb-header__inner">
+          <Link to="/" className="bb-header__brand">
+            <span className="bb-header__bb">BB</span>
+            <span className="bb-header__word">BallotBuddy</span>
           </Link>
-          <nav className="hidden items-center gap-1 sm:flex">
-            {NAV_LINKS.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  location.pathname === to
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
+          {activeIndex >= 0 ? (
+            <div className="bb-header__steps" aria-label="Your progress">
+              {FLOW_STEPS.map((step, i) => {
+                const state = i < activeIndex ? 'done' : i === activeIndex ? 'active' : 'upcoming'
+                return (
+                  <Fragment key={step.to}>
+                    {i > 0 ? <span className="bb-header__conn" aria-hidden="true" /> : null}
+                    <span className={`bb-header__step bb-header__step--${state}`}>
+                      <span className="bb-header__dot">{state === 'done' ? '✓' : i + 1}</span>
+                      <span className="bb-header__steplabel">{step.label}</span>
+                    </span>
+                  </Fragment>
+                )
+              })}
+            </div>
+          ) : null}
+          <div className="bb-header__side">
             {user ? (
               <>
-                <span className="hidden text-sm text-slate-500 md:inline">{user.phoneNumber}</span>
-                <button
-                  onClick={handleSignOut}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
-                >
+                <span className="bb-header__phone">{user.phoneNumber}</span>
+                <button className="bb-header__btn" onClick={handleSignOut}>
                   Sign out
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-              >
+              <Link to="/login" className="bb-header__btn bb-header__btn--primary" style={{ textDecoration: 'none' }}>
                 Sign in
               </Link>
             )}
           </div>
         </div>
       </header>
-      <main className="flex-1">{children}</main>
-      <footer className="border-t border-slate-200 bg-white py-6">
-        <div className="mx-auto max-w-6xl px-4 text-center text-xs text-slate-400 sm:px-6">
-          BallotBuddy is a nonpartisan voter guide. It compares candidates against your views — the
-          final choice is always yours.
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>{children}</main>
+      <footer
+        style={{
+          borderTop: '1px solid var(--border-default)',
+          background: 'var(--white)',
+          padding: 'var(--space-6) 0',
+        }}
+      >
+        <div className="bb-container" style={{ textAlign: 'center' }}>
+          <div
+            aria-hidden="true"
+            style={{ color: 'var(--blue-300)', fontSize: 10, letterSpacing: '0.6em', textIndent: '0.6em', marginBottom: 10 }}
+          >
+            ★ ★ ★
+          </div>
+          <p style={{ margin: 0, fontSize: 'var(--text-xs)', lineHeight: 1.6, color: 'var(--text-faint)' }}>
+            BallotBuddy is a nonpartisan voter guide. It compares candidates against your views —
+            the final choice is always yours.
+          </p>
         </div>
       </footer>
     </div>

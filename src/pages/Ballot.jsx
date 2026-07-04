@@ -16,23 +16,19 @@ function DataQualityBadge({ quality }) {
 
 function CandidateCompareCard({ option, highlight }) {
   return (
-    <div
-      className={`flex flex-col rounded-xl border p-5 ${
-        highlight ? 'border-indigo-300 bg-indigo-50/40' : 'border-slate-200 bg-white'
-      }`}
-    >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
+    <div className={`bb-cand ${highlight ? 'bb-cand--highlight' : ''}`}>
+      <div className="bb-cand__top">
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           {option.photoUrl && (
             <img
               src={option.photoUrl}
               alt=""
-              className="h-11 w-11 flex-shrink-0 rounded-full object-cover"
+              style={{ width: 44, height: 44, flex: 'none', borderRadius: '50%', objectFit: 'cover' }}
             />
           )}
           <div>
-            <p className="font-semibold text-slate-900">{option.name}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
+            <p className="bb-cand__name">{option.name}</p>
+            <div className="bb-cand__tags">
               <PartyBadge party={option.party} />
               {option.incumbent && <Badge>Incumbent</Badge>}
             </div>
@@ -40,26 +36,26 @@ function CandidateCompareCard({ option, highlight }) {
         </div>
         <ScoreRing score={option.score} size={56} />
       </div>
-      {option.bio && <p className="mb-3 text-sm leading-relaxed text-slate-600">{option.bio}</p>}
-      <div className="mt-auto space-y-2 text-sm">
+      {option.bio && <p className="bb-cand__bio">{option.bio}</p>}
+      <div className="bb-cand__points">
         {option.alignments?.slice(0, 2).map((a, i) => (
-          <p key={`a-${i}`} className="flex gap-2 text-emerald-700">
-            <span aria-hidden>✓</span>
+          <p key={`a-${i}`} className="bb-cand__point" style={{ color: 'var(--agree)' }}>
+            <span className="bb-cand__glyph" aria-hidden="true">✓</span>
             <span>
-              <span className="font-medium">{a.issue}:</span> {a.explanation}
+              <span className="bb-cand__issue">{a.issue}:</span> {a.explanation}
             </span>
           </p>
         ))}
         {option.conflicts?.slice(0, 1).map((c, i) => (
-          <p key={`c-${i}`} className="flex gap-2 text-rose-700">
-            <span aria-hidden>✕</span>
+          <p key={`c-${i}`} className="bb-cand__point" style={{ color: 'var(--differ)' }}>
+            <span className="bb-cand__glyph" aria-hidden="true">✕</span>
             <span>
-              <span className="font-medium">{c.issue}:</span> {c.explanation}
+              <span className="bb-cand__issue">{c.issue}:</span> {c.explanation}
             </span>
           </p>
         ))}
       </div>
-      <div className="mt-3">
+      <div className="bb-cand__foot">
         <DataQualityBadge quality={option.dataQuality} />
       </div>
     </div>
@@ -68,53 +64,88 @@ function CandidateCompareCard({ option, highlight }) {
 
 function DeepDive({ option }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
+    <div
+      style={{
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border-default)',
+        background: 'var(--white)',
+        padding: 20,
+      }}
+    >
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         {option.photoUrl && (
-          <img src={option.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+          <img
+            src={option.photoUrl}
+            alt=""
+            style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+          />
         )}
-        <p className="font-semibold text-slate-900">{option.name}</p>
+        <p style={{ margin: 0, font: 'var(--weight-semibold) var(--text-base) / 1.3 var(--font-sans)', color: 'var(--text-heading)' }}>
+          {option.name}
+        </p>
         <PartyBadge party={option.party} />
         {option.incumbent && <Badge>Incumbent</Badge>}
-        <span className="ml-auto text-sm font-bold text-slate-700">{option.score}/100 fit</span>
+        <span style={{ marginLeft: 'auto', font: '600 var(--text-sm) / 1.4 var(--font-mono)', color: 'var(--text-heading)' }}>
+          {option.score}/100 fit
+        </span>
       </div>
       {option.record && (
-        <p className="mb-3 text-sm leading-relaxed text-slate-600">
-          <span className="font-medium text-slate-800">Track record: </span>
+        <p style={{ margin: '0 0 14px', font: '430 var(--text-sm) / 1.6 var(--font-sans)', color: 'var(--text-secondary)' }}>
+          <span style={{ fontWeight: 'var(--weight-semibold)', color: 'var(--text-heading)' }}>Track record: </span>
           {option.record}
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="bb-deepdive-grid">
         <div>
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-            Where you agree
+          <p
+            style={{
+              margin: '0 0 8px',
+              font: 'var(--weight-semibold) var(--text-xs) / 1.4 var(--font-sans)',
+              letterSpacing: 'var(--tracking-eyebrow)',
+              textTransform: 'uppercase',
+              color: 'var(--agree)',
+            }}
+          >
+            ✓ Where you agree
           </p>
           {option.alignments?.length ? (
-            <ul className="space-y-1.5 text-sm text-slate-700">
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {option.alignments.map((a, i) => (
-                <li key={i}>
-                  <span className="font-medium">{a.issue}:</span> {a.explanation}
+                <li key={i} style={{ font: '430 var(--text-sm) / 1.55 var(--font-sans)', color: 'var(--text-body)' }}>
+                  <span style={{ fontWeight: 'var(--weight-semibold)' }}>{a.issue}:</span> {a.explanation}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-400">Nothing clear in the data.</p>
+            <p style={{ margin: 0, font: '430 var(--text-sm) / 1.5 var(--font-sans)', color: 'var(--text-faint)' }}>
+              Nothing clear in the data.
+            </p>
           )}
         </div>
         <div>
-          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-rose-700">
-            Where you differ
+          <p
+            style={{
+              margin: '0 0 8px',
+              font: 'var(--weight-semibold) var(--text-xs) / 1.4 var(--font-sans)',
+              letterSpacing: 'var(--tracking-eyebrow)',
+              textTransform: 'uppercase',
+              color: 'var(--differ)',
+            }}
+          >
+            ✕ Where you differ
           </p>
           {option.conflicts?.length ? (
-            <ul className="space-y-1.5 text-sm text-slate-700">
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {option.conflicts.map((c, i) => (
-                <li key={i}>
-                  <span className="font-medium">{c.issue}:</span> {c.explanation}
+                <li key={i} style={{ font: '430 var(--text-sm) / 1.55 var(--font-sans)', color: 'var(--text-body)' }}>
+                  <span style={{ fontWeight: 'var(--weight-semibold)' }}>{c.issue}:</span> {c.explanation}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-400">No clear conflicts in the data.</p>
+            <p style={{ margin: 0, font: '430 var(--text-sm) / 1.5 var(--font-sans)', color: 'var(--text-faint)' }}>
+              No clear conflicts in the data.
+            </p>
           )}
         </div>
       </div>
@@ -124,7 +155,7 @@ function DeepDive({ option }) {
 
 function LiveDataBadge({ live }) {
   if (live == null) return null
-  return live ? <Badge tone="green">Live candidates</Badge> : <Badge tone="slate">Sample data</Badge>
+  return live ? <Badge tone="green">Live candidates</Badge> : <Badge tone="neutral">Sample data</Badge>
 }
 
 function RaceSection({ race }) {
@@ -135,14 +166,18 @@ function RaceSection({ race }) {
   const single = goodOptions.length === 1 && race.options.length === 1
 
   return (
-    <Card className="p-6 sm:p-8">
-      <div className="mb-1 flex flex-wrap items-center gap-3">
-        <h2 className="text-xl font-bold text-slate-900">{race.office}</h2>
-        <Badge tone="slate">{LEVEL_LABELS[race.level] || race.level}</Badge>
-        {race.district && <span className="text-sm text-slate-500">{race.district}</span>}
+    <Card style={{ padding: 32 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+        <h2 style={{ font: 'var(--weight-display) var(--text-xl) / 1.3 var(--font-display)' }}>{race.office}</h2>
+        <Badge>{LEVEL_LABELS[race.level] || race.level}</Badge>
+        {race.district && (
+          <span style={{ font: '430 var(--text-sm) / 1.4 var(--font-sans)', color: 'var(--text-muted)' }}>
+            {race.district}
+          </span>
+        )}
         <LiveDataBadge live={race.live} />
       </div>
-      <p className="mb-5 text-sm text-slate-500">
+      <p style={{ margin: '0 0 20px', font: '430 var(--text-sm) / 1.5 var(--font-sans)', color: 'var(--text-muted)' }}>
         {single
           ? 'Only one candidate is on the ballot for this race.'
           : goodOptions.length > 1
@@ -150,27 +185,27 @@ function RaceSection({ race }) {
             : 'One candidate stands out for your views, but every option is below.'}
       </p>
 
-      <div className={`grid gap-4 ${goodOptions.length > 1 ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:max-w-md'}`}>
+      <div
+        className={`bb-cand-grid ${goodOptions.length > 1 ? 'bb-cand-grid--multi' : 'bb-cand-grid--single'}`}
+        style={goodOptions.length > 1 ? { '--cand-cols': Math.min(goodOptions.length, 3) } : undefined}
+      >
         {goodOptions.map((o) => (
           <CandidateCompareCard key={o.candidateId} option={o} highlight={goodOptions.length > 1} />
         ))}
       </div>
 
       {others.length > 0 && !expanded && (
-        <p className="mt-4 text-sm text-slate-500">
+        <p style={{ margin: '16px 0 0', font: '430 var(--text-sm) / 1.5 var(--font-sans)', color: 'var(--text-muted)' }}>
           Also on the ballot: {others.map((o) => `${o.name} (${o.party})`).join(', ')}
         </p>
       )}
 
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="mt-5 text-sm font-medium text-indigo-600 hover:text-indigo-800"
-      >
+      <Button variant="outline" size="sm" style={{ marginTop: 20 }} onClick={() => setExpanded(!expanded)}>
         {expanded ? '− Hide the full comparison' : '+ Compare all candidates in depth'}
-      </button>
+      </Button>
 
       {expanded && (
-        <div className="mt-4 space-y-4">
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {race.options.map((o) => (
             <DeepDive key={o.candidateId} option={o} />
           ))}
@@ -222,54 +257,87 @@ export function Ballot() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        <div className="mb-10 text-center">
-          <Badge tone="indigo" className="mb-3">
-            {SEED_BALLOT.electionName}
+      <div style={{ maxWidth: 'var(--container-max)', width: '100%', margin: '0 auto', padding: '48px 24px 80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <Badge tone="blue" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.06em' }}>
+            NOVEMBER 3, 2026 · GENERAL ELECTION
           </Badge>
-          <h1 className="text-3xl font-bold text-slate-900">Your ballot, compared</h1>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+          <h1
+            style={{
+              margin: '14px 0 0',
+              font: 'var(--weight-display) var(--text-3xl) / 1.15 var(--font-display)',
+              letterSpacing: 'var(--tracking-display)',
+            }}
+          >
+            Your ballot, compared
+          </h1>
+          <p
+            style={{
+              margin: '12px auto 0',
+              maxWidth: 620,
+              font: '430 var(--text-base) / 1.6 var(--font-sans)',
+              color: 'var(--text-secondary)',
+            }}
+          >
             For each office we highlight the candidates who best fit your views — usually more than
             one — and show where they agree and differ with you. The pick is yours.
           </p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p style={{ margin: '8px 0 0', font: '400 var(--text-sm) / 1.5 var(--font-mono)', color: 'var(--text-muted)' }}>
             {location.county ? `${location.county} County, ` : ''}
             {location.state} {location.zip}
             {usedFallback && ' · quick-match mode (AI matcher unavailable)'}
           </p>
         </div>
 
-        <div className="mb-8 flex items-start gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-white p-5">
+        <Card stripe style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '24px 24px 20px', marginBottom: 32 }}>
           <span
-            aria-hidden
-            className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm text-white"
+            aria-hidden="true"
+            style={{
+              flex: 'none',
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              background: 'var(--blue-800)',
+              color: '#fff',
+              fontSize: 14,
+            }}
           >
             ⚖
           </span>
           <div>
-            <p className="font-semibold text-slate-900">Informed, not influenced</p>
-            <p className="mt-0.5 text-sm leading-relaxed text-slate-600">
+            <p style={{ margin: 0, font: 'var(--weight-semibold) var(--text-base) / 1.4 var(--font-sans)', color: 'var(--text-heading)' }}>
+              Informed, not influenced
+            </p>
+            <p style={{ margin: '2px 0 0', font: '430 var(--text-sm) / 1.55 var(--font-sans)', color: 'var(--text-secondary)' }}>
               When several candidates fit your views, we show all of them — where they agree with
               you, where they don't, and how solid the data is. You'll only see one name when a
               race genuinely has one good option.
             </p>
           </div>
-        </div>
+        </Card>
 
         {!races ? (
-          <div className="flex flex-col items-center gap-4 py-24">
-            <Spinner className="h-8 w-8" />
-            <p className="text-slate-600">Comparing candidates against your profile…</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '96px 0' }}>
+            <Spinner size={32} />
+            <p style={{ font: '430 var(--text-base) / 1.5 var(--font-sans)', color: 'var(--text-secondary)' }}>
+              Comparing candidates against your profile…
+            </p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
             {races.map((race) => (
               <RaceSection key={race.office + (race.district || '')} race={race} />
             ))}
           </div>
         )}
 
-        <div className="mt-12 text-center">
+        <div style={{ marginTop: 48, display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <Link to="/results">
+            <Button variant="ghost">← Back to my profile</Button>
+          </Link>
           <Link to="/quiz">
             <Button variant="secondary">Retake the quiz</Button>
           </Link>

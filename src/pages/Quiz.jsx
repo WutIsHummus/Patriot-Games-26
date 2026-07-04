@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Layout } from '../components/Layout.jsx'
-import { Button, Card, Badge, Progress, Spinner } from '../components/ui.jsx'
+import { Button, Card, Badge, Progress, Spinner, Input } from '../components/ui.jsx'
 import { QUIZ_QUESTIONS, QUIZ_SCALE, RANK_LABELS } from '../data/quizQuestions.js'
 import { SEED_LOCATION } from '../data/seedBallot.js'
 import { scoreQuizLocally } from '../lib/localEngine.js'
@@ -108,9 +108,21 @@ export function Quiz() {
   if (scoring) {
     return (
       <Layout>
-        <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4">
-          <Spinner className="h-8 w-8" />
-          <p className="text-slate-600">Matching candidates to your answers…</p>
+        <div
+          style={{
+            minHeight: '60vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 16,
+            padding: 24,
+          }}
+        >
+          <Spinner size={32} />
+          <p style={{ font: '430 var(--text-base) / 1.5 var(--font-sans)', color: 'var(--text-secondary)' }}>
+            Matching candidates to your answers…
+          </p>
         </div>
       </Layout>
     )
@@ -119,25 +131,35 @@ export function Quiz() {
   if (step === -1) {
     return (
       <Layout>
-        <div className="flex min-h-[70vh] items-center justify-center px-4 py-16">
-          <Card className="w-full max-w-lg p-8">
-            <Badge tone="indigo" className="mb-4">
-              Personalized quiz
-            </Badge>
-            <h1 className="text-2xl font-bold text-slate-900">First, where do you vote?</h1>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+        <div
+          style={{
+            minHeight: '70vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '64px 24px',
+          }}
+        >
+          <Card style={{ width: '100%', maxWidth: 500, padding: 32 }}>
+            <Badge tone="blue">Personalized quiz</Badge>
+            <h1 style={{ margin: '16px 0 0', font: 'var(--weight-display) var(--text-xl) / 1.3 var(--font-display)' }}>
+              First, where do you vote?
+            </h1>
+            <p style={{ margin: '10px 0 0', font: '430 var(--text-sm) / 1.6 var(--font-sans)', color: 'var(--text-secondary)' }}>
               You will rate eleven policy statements from 1 (strongly disagree) to 7 (strongly
               agree), then list any other priorities in your own words — separate multiple items
               with commas. Your ZIP helps locate the elections on your ballot.
             </p>
             <form
-              className="mt-6 flex gap-3"
               onSubmit={(e) => {
                 e.preventDefault()
                 setStep(0)
               }}
+              style={{ marginTop: 24, display: 'flex', gap: 12, alignItems: 'flex-end' }}
             >
-              <input
+              <Input
+                label="ZIP code"
+                mono
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]{5}"
@@ -145,14 +167,14 @@ export function Quiz() {
                 placeholder="78701"
                 value={zip}
                 onChange={(e) => setZip(e.target.value.replace(/\D/g, ''))}
-                className="w-40 rounded-lg border border-slate-300 px-3.5 py-2.5 text-lg tracking-widest shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                style={{ width: 150 }}
                 required
               />
               <Button type="submit" size="lg">
                 Start quiz
               </Button>
             </form>
-            <p className="mt-4 text-xs text-slate-400">
+            <p style={{ margin: '16px 0 0', font: '430 var(--text-xs) / 1.5 var(--font-sans)', color: 'var(--text-faint)' }}>
               Demo uses Austin, TX (Travis County) ballot data regardless of ZIP.
             </p>
           </Card>
@@ -163,24 +185,24 @@ export function Quiz() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-        <div className="mb-8">
-          <div className="mb-2 flex items-center justify-between text-sm text-slate-500">
-            <span>
+      <div style={{ maxWidth: 'var(--content-max)', width: '100%', margin: '0 auto', padding: '48px 24px 80px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ font: '400 var(--text-sm) / 1.4 var(--font-mono)', color: 'var(--text-muted)', letterSpacing: '0.02em' }}>
               Question {step + 1} of {QUIZ_QUESTIONS.length}
             </span>
-            <Badge tone="slate">{question.topic}</Badge>
+            <Badge tone={question.topic?.startsWith('Local') ? 'green' : 'neutral'}>{question.topic}</Badge>
           </div>
           <Progress value={progress} />
         </div>
 
         {isOpenQuestion ? (
           <>
-            <p className="mb-3 text-sm font-medium text-slate-500">
+            <p style={{ margin: '0 0 12px', font: 'var(--weight-medium) var(--text-sm) / 1.5 var(--font-sans)', color: 'var(--text-muted)' }}>
               Enter one or more priorities. Separate multiple answers with commas.
             </p>
 
-            <h1 className="mb-6 text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
+            <h1 style={{ margin: '0 0 24px', font: 'var(--weight-display) var(--text-2xl) / 1.25 var(--font-display)' }}>
               {question.question}
             </h1>
 
@@ -195,37 +217,35 @@ export function Quiz() {
                 value={openDraft}
                 onChange={(e) => setOpenDraft(e.target.value)}
                 placeholder={question.placeholder}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-800 shadow-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="bb-input"
+                style={{ resize: 'vertical', lineHeight: 1.55 }}
                 required
               />
               {openDraft && parseOpenInput(openDraft).length > 1 && (
-                <ul className="mt-3 flex flex-wrap gap-2">
+                <ul style={{ margin: '12px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {parseOpenInput(openDraft).map((item) => (
-                    <li
-                      key={item}
-                      className="rounded-full bg-indigo-50 px-3 py-1 text-sm text-indigo-800"
-                    >
-                      {item}
+                    <li key={item}>
+                      <Badge tone="blue">{item}</Badge>
                     </li>
                   ))}
                 </ul>
               )}
-              <Button type="submit" size="lg" className="mt-6">
+              <Button type="submit" size="lg" style={{ marginTop: 24 }}>
                 {step < QUIZ_QUESTIONS.length - 1 ? 'Continue' : 'Finish quiz'}
               </Button>
             </form>
           </>
         ) : (
           <>
-            <p className="mb-3 text-sm font-medium text-slate-500">
+            <p style={{ margin: '0 0 12px', font: 'var(--weight-medium) var(--text-sm) / 1.5 var(--font-sans)', color: 'var(--text-muted)' }}>
               Rate how much you agree (1 = strongly disagree, 7 = strongly agree)
             </p>
 
-            <h1 className="mb-8 text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
+            <h1 style={{ margin: '0 0 32px', font: 'var(--weight-display) var(--text-2xl) / 1.25 var(--font-display)' }}>
               {question.question}
             </h1>
 
-            <div className="grid grid-cols-7 gap-2 sm:gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
               {Array.from(
                 { length: QUIZ_SCALE.max - QUIZ_SCALE.min + 1 },
                 (_, i) => QUIZ_SCALE.min + i,
@@ -236,39 +256,34 @@ export function Quiz() {
                     key={rank}
                     onClick={() => selectRank(rank)}
                     title={RANK_LABELS[rank - 1]}
-                    className={`flex flex-col items-center rounded-xl border px-1 py-3 transition-all hover:border-indigo-400 hover:shadow-sm sm:py-4 ${
-                      selected
-                        ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100'
-                        : 'border-slate-200 bg-white'
-                    }`}
+                    className={`bb-quizopt ${selected ? 'bb-quizopt--selected' : ''}`}
+                    style={{ flexDirection: 'column', justifyContent: 'center', gap: 6, padding: '14px 4px' }}
                   >
-                    <span className="text-lg font-bold text-slate-900">{rank}</span>
-                    <span className="mt-1 hidden text-center text-[10px] leading-tight text-slate-500 sm:block">
+                    <span style={{ font: '600 var(--text-lg) / 1 var(--font-mono)', color: selected ? 'var(--primary)' : 'var(--text-heading)' }}>
+                      {rank}
+                    </span>
+                    <span className="bb-quizopt__ranklabel" style={{ font: '430 10px/1.25 var(--font-sans)', color: 'var(--text-muted)', textAlign: 'center' }}>
                       {RANK_LABELS[rank - 1]}
                     </span>
                   </button>
                 )
               })}
             </div>
-
-            <p className="mt-3 text-center text-xs text-slate-400 sm:hidden">
-              {answers[question.id]
-                ? RANK_LABELS[answers[question.id].answer - 1]
-                : 'Tap a number to continue'}
-            </p>
           </>
         )}
 
         {step > 0 && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ marginTop: 32 }}
             onClick={() => {
               setStep(step - 1)
               setOpenDraft('')
             }}
-            className="mt-8 text-sm font-medium text-slate-500 hover:text-slate-800"
           >
             ← Back
-          </button>
+          </Button>
         )}
       </div>
     </Layout>
