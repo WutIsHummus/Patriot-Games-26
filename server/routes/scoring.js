@@ -13,15 +13,7 @@ router.post('/quiz', async (req, res) => {
   res.json({ ok: true, profile: result.data, cache: result.cache })
 })
 
-// POST /api/scoring/candidates  { profile, candidates: [...], election? }
-// -> { ok, matches: [...], cache }
-router.post('/candidates', async (req, res) => {
-  const { profile, candidates, election } = req.body || {}
-  const result = await providers.openrouter.scoreCandidates({ profile, candidates, election })
-  if (!result.ok) {
-    return res.status(result.error?.status || 502).json({ ok: false, warnings: [result] })
-  }
-  res.json({ ok: true, matches: result.data.matches || [], cache: result.cache })
-})
+// Candidate matching lives at POST /api/agent/ballot (server/models/) — the
+// single implementation of profile-vs-candidate scoring. Do not add a second.
 
 export default router

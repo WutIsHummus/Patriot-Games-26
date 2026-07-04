@@ -63,27 +63,6 @@ Given a user's quiz answers, produce a JSON object with exactly this shape:
 - summary: 2-3 neutral sentences describing the user's political profile. Never advocate.
 Return only the JSON object.`
 
-const CANDIDATE_SCORING_PROMPT = `You are a nonpartisan candidate-match scorer for a voter guide app.
-You receive a user's political profile (axes + weighted issue preferences) and a list of candidates with whatever stance information is available.
-Produce a JSON object with exactly this shape:
-{
-  "matches": [
-    {
-      "candidateId": string,
-      "name": string,
-      "score": <0..100>,
-      "alignments": [ { "issue": string, "explanation": string } ],
-      "conflicts": [ { "issue": string, "explanation": string } ],
-      "dataQuality": "high" | "medium" | "low"
-    }
-  ]
-}
-- Score every candidate in the input, sorted best match first.
-- Base scores only on the provided stance data; when stance data is thin, keep the score near 50 and set dataQuality low rather than guessing from party alone (party may inform but not determine).
-- alignments/conflicts: concrete, cited to the provided data, neutral wording.
-- Never tell the user who to vote for; describe fit, both ways.
-Return only the JSON object.`
-
 function notConfigured() {
   return { ok: false, source: PROVIDER, error: { message: 'OPENROUTER_API_KEY not configured', status: 501 } }
 }
@@ -98,28 +77,6 @@ export async function scoreQuiz({ answers } = {}) {
   return wrap(key, PROVIDER, TTL.SCORING, async () => {
     try {
       const data = await chatJson(QUIZ_SCORING_PROMPT, { answers })
-      return { ok: true, source: PROVIDER, data }
-    } catch (err) {
-      return normalizeError(PROVIDER, err)
-    }
-  })
-}
-
-export async function scoreCandidates({ profile, candidates, election } = {}) {
-  if (!hasKey(PROVIDER)) return notConfigured()
-  if (!profile || typeof profile !== 'object') {
-    return { ok: false, source: PROVIDER, error: { message: 'profile object is required', status: 400 } }
-  }
-  if (!Array.isArray(candidates) || candidates.length === 0) {
-    return { ok: false, source: PROVIDER, error: { message: 'candidates array is required', status: 400 } }
-  }
-
-  const key = buildKey(PROVIDER, 'scoreCandidates', {
-    hash: hashParams({ profile, candidates, election, model: OPENROUTER_MODEL }),
-  })
-  return wrap(key, PROVIDER, TTL.SCORING, async () => {
-    try {
-      const data = await chatJson(CANDIDATE_SCORING_PROMPT, { profile, candidates, election })
       return { ok: true, source: PROVIDER, data }
     } catch (err) {
       return normalizeError(PROVIDER, err)
