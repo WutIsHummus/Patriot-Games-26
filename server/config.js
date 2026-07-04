@@ -8,7 +8,10 @@ export const KEYS = {
   fec: process.env.FEC_API_KEY || '',
   openstates: process.env.OPENSTATES_API_KEY || '',
   ballotpedia: process.env.BALLOTPEDIA_API_KEY || '',
+  openrouter: process.env.OPENROUTER_API_KEY || '',
 }
+
+export const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5'
 
 export function hasKey(provider) {
   return Boolean(KEYS[provider])
@@ -21,6 +24,7 @@ export const TTL = {
   FINANCE: 24 * 3600,
   BIO: 7 * 24 * 3600,
   LEGISLATORS: 24 * 3600,
+  SCORING: 24 * 3600,
 }
 
 // Vercel's filesystem is read-only except /tmp, and /tmp is not persisted

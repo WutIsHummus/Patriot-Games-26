@@ -1,55 +1,44 @@
+// Sends server/models/testPrompt.txt (a JSON payload: location + profile +
+// ballot) through the running API server.
+// Usage: npm run server (in another terminal), then npm run test:agent
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { OPENROUTER_API_KEY, OPENROUTER_MODEL } from '../src/models/apiKey.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const modelsDir = join(__dirname, '../src/models')
+const API_URL = process.env.API_URL || 'http://localhost:3001/api/agent/ballot'
 
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const raw = readFileSync(join(__dirname, '../server/models/testPrompt.txt'), 'utf8').trim()
 
-const context = readFileSync(join(modelsDir, 'context.md'), 'utf8').trim()
-const prompt = readFileSync(join(modelsDir, 'testPrompt.txt'), 'utf8').trim()
-
-if (!prompt) {
-  console.error('testPrompt.txt is empty. Add a prompt to test with.')
+if (!raw) {
+  console.error('testPrompt.txt is empty. Add a JSON payload to test with.')
   process.exit(1)
 }
 
-if (!OPENROUTER_API_KEY) {
-  console.error(
-    'Missing OPENROUTER_API_KEY. Add your key in src/models/apiKey.js.',
-  )
+let payload
+try {
+  payload = JSON.parse(raw)
+} catch (err) {
+  console.error(`testPrompt.txt is not valid JSON: ${err.message}`)
   process.exit(1)
 }
 
-console.log('Prompt:', prompt)
+console.log('Payload:', JSON.stringify(payload, null, 2))
 console.log('---')
 
-const response = await fetch(OPENROUTER_API_URL, {
+const response = await fetch(API_URL, {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-    'HTTP-Referer': 'http://localhost',
-    'X-OpenRouter-Title': 'Hackathon',
-  },
-  body: JSON.stringify({
-    model: OPENROUTER_MODEL,
-    messages: [
-      { role: 'system', content: context },
-      { role: 'user', content: prompt },
-    ],
-  }),
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload),
 })
 
-if (!response.ok) {
-  const error = await response.json().catch(() => ({}))
-  console.error(error.error?.message ?? `Request failed (${response.status})`)
+const data = await response.json().catch(() => ({}))
+
+if (!response.ok || !data.ok) {
+  const message = data.warnings?.[0]?.error?.message ?? data.error?.message
+  console.error(message ?? `Request failed (${response.status})`)
   process.exit(1)
 }
 
-const data = await response.json()
-const reply = data.choices[0]?.message?.content ?? ''
-
-console.log('Reply:', reply)
+console.log('Cache:', JSON.stringify(data.cache))
+console.log('Races:', JSON.stringify(data.races, null, 2))

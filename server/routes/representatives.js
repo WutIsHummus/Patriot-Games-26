@@ -37,6 +37,7 @@ router.get('/:id', async (req, res) => {
       contact: bio?.contact ?? null,
       socialMedia: bio?.socialMedia ?? null,
     },
+    cache: baseResult.cache,
     warnings,
   })
 })
@@ -53,7 +54,7 @@ router.get('/:id/finance', async (req, res) => {
   if (!result.ok) {
     return res.status(result.error?.status || 502).json({ ok: false, warnings: [result] })
   }
-  res.json({ ok: true, finance: result.data })
+  res.json({ ok: true, finance: result.data, cache: result.cache })
 })
 
 export default router

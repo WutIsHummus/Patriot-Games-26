@@ -21,6 +21,7 @@ router.get('/', async (req, res) => {
   const { office, level, state, district, cycle } = req.query
   const warnings = []
   const results = []
+  const cache = {}
 
   if (!level || level === 'federal') {
     const fecResult = await providers.fec.getCandidatesByOffice({ office, state, district, cycle })
@@ -29,6 +30,7 @@ router.get('/', async (req, res) => {
     } else {
       warnings.push(fecResult)
     }
+    if (fecResult.cache) cache.fec = fecResult.cache
   }
 
   if (!level || level === 'state') {
@@ -38,6 +40,7 @@ router.get('/', async (req, res) => {
     } else {
       warnings.push(osResult)
     }
+    if (osResult.cache) cache.openstates = osResult.cache
   }
 
   if (results.length === 0 && warnings.length > 0) {
@@ -45,7 +48,7 @@ router.get('/', async (req, res) => {
   }
 
   const candidates = dedupe(results)
-  res.json({ ok: true, count: candidates.length, candidates, warnings })
+  res.json({ ok: true, count: candidates.length, candidates, cache, warnings })
 })
 
 export default router

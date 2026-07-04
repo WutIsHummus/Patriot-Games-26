@@ -11,14 +11,14 @@ router.get('/', async (req, res) => {
     if (!result.ok) {
       return res.status(result.error?.status || 502).json({ ok: false, warnings: [result] })
     }
-    return res.json({ ok: true, elections: result.data.election ? [result.data.election] : [] })
+    return res.json({ ok: true, elections: result.data.election ? [result.data.election] : [], cache: result.cache })
   }
 
   const result = await providers.civic.getElections()
   if (!result.ok) {
     return res.status(result.error?.status || 502).json({ ok: false, warnings: [result] })
   }
-  res.json({ ok: true, elections: result.data })
+  res.json({ ok: true, elections: result.data, cache: result.cache })
 })
 
 router.get('/:electionId/contests', async (req, res) => {
@@ -33,7 +33,7 @@ router.get('/:electionId/contests', async (req, res) => {
   if (!result.ok) {
     return res.status(result.error?.status || 502).json({ ok: false, warnings: [result] })
   }
-  res.json({ ok: true, contests: result.data.contests, pollingLocations: result.data.pollingLocations })
+  res.json({ ok: true, contests: result.data.contests, pollingLocations: result.data.pollingLocations, cache: result.cache })
 })
 
 export default router

@@ -1,82 +1,27 @@
-import systemContext from './context.md?raw'
-import { OPENROUTER_API_KEY, OPENROUTER_MODEL } from './apiKey.js'
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
-
-/**
- * Build the messages array for the chat API from conversation history.
- */
-export function buildMessages(history = []) {
-  return [
-    { role: 'system', content: systemContext.trim() },
-    ...history.map(({ role, content }) => ({ role, content })),
-  ]
-}
+// Client for the server-side voter-guide engine (server/models/agent.js).
+// The OpenRouter key and system prompt live on the server; the browser only
+// talks to our own /api/agent endpoint.
 
 /**
- * Send a user message and return the assistant reply.
+ * Get the curated ballot for a voter.
  *
- * @param {string} userMessage - The latest message from the visitor
- * @param {Array<{ role: 'user' | 'assistant', content: string }>} history - Prior turns
- * @returns {Promise<string>} Assistant reply text
+ * @param {object} input
+ * @param {object} input.location - { zip, state, county }
+ * @param {object} input.profile - output of POST /api/scoring/quiz
+ * @param {object} input.ballot - races + candidates (from /api/elections + /api/candidates or seed data)
+ * @returns {Promise<Array>} races: per-race topPick, notableAlternative, and all options scored
  */
-export async function sendMessage(userMessage, history = []) {
-  if (!OPENROUTER_API_KEY) {
-    throw new Error(
-      'Missing OPENROUTER_API_KEY. Add your key in src/models/apiKey.js (see apiKey.example.js).',
-    )
-  }
-
-  const messages = buildMessages([
-    ...history,
-    { role: 'user', content: userMessage },
-  ])
-
-  const response = await fetch(OPENROUTER_API_URL, {
+export async function getRecommendedBallot({ location, profile, ballot }) {
+  const response = await fetch('/api/agent/ballot', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-      'HTTP-Referer': window.location.origin,
-      'X-OpenRouter-Title': 'Hackathon',
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ location, profile, ballot }),
   })
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(
-      error.error?.message ?? `Request failed with status ${response.status}`,
-    )
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok || !data.ok) {
+    const message = data.warnings?.[0]?.error?.message ?? data.error?.message
+    throw new Error(message ?? `Request failed with status ${response.status}`)
   }
-
-  const data = await response.json()
-  return data.choices[0]?.message?.content ?? ''
+  return data.races
 }
-
-/**
- * Create a simple in-memory chat session that tracks history.
- */
-export function createAgentSession() {
-  const history = []
-
-  return {
-    getHistory: () => [...history],
-
-    clear: () => {
-      history.length = 0
-    },
-
-    send: async (userMessage) => {
-      const reply = await sendMessage(userMessage, history)
-      history.push({ role: 'user', content: userMessage })
-      history.push({ role: 'assistant', content: reply })
-      return reply
-    },
-  }
-}
-
-export { systemContext }

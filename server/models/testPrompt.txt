@@ -1,0 +1,36 @@
+{
+  "location": { "zip": "78641", "state": "TX", "county": "Williamson" },
+  "profile": {
+    "axes": { "economic": 0.4, "social": 0.1, "localFocus": 0.3 },
+    "issuePreferences": [
+      { "issue": "gas prices", "stance": "wants lower fuel/energy costs", "weight": 0.9 },
+      { "issue": "foreign policy", "stance": "wants to end US involvement in wars", "weight": 0.9 }
+    ],
+    "summary": "Leans slightly right economically, centrist socially. Cares most about lower energy costs and ending foreign wars."
+  },
+  "ballot": {
+    "races": [
+      {
+        "office": "U.S. Senate",
+        "level": "federal",
+        "district": null,
+        "candidates": [
+          {
+            "candidateId": "tx-sen-1",
+            "name": "Jane Placeholder",
+            "party": "Republican",
+            "record": "Voted to expand domestic drilling permits (2024); co-sponsored a war powers resolution to limit overseas deployments (2025).",
+            "promises": "Pledges to cut the federal gas tax."
+          },
+          {
+            "candidateId": "tx-sen-2",
+            "name": "John Sample",
+            "party": "Democrat",
+            "record": "Voted for clean-energy subsidies (2024); voted for continued military aid packages (2025).",
+            "promises": "Pledges refundable energy rebates for commuters."
+          }
+        ]
+      }
+    ]
+  }
+}
